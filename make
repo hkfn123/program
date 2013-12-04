@@ -1,1 +1,1 @@
-cc *.c -lcurl -ljson -o test
+cc *.c -lcurl -ljson -o test -lmysqlclient
