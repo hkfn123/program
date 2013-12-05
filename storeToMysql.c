@@ -6,7 +6,8 @@
 #include "getJsonString.h"
 #include "parseJson.h"
 
-MYSQL *conn_ptr;	
+
+MYSQL conn;
 char sqlcmd[8196];
 
 char* handleStringWithString(const char* idStr);
@@ -29,19 +30,17 @@ void requestJsonStringWithId(const char* idStr)
 		strcat(blessUrl,tempStr);
 		//fprintf(stderr,"%s\n",blessUrl);
 		char* retString = getURLContentfromURLString(blessUrl);
-		fprintf(stderr,"%ld",strlen(retString));
+	//	fprintf(stderr,"%ld",strlen(retString));
 		if(strlen(retString)>100)
 		{
 			parseBlessFromJsonString(retString);
 		}
 		else
 		{
-			fprintf(stderr,"break\n");
 			break;
 		}
 		
 		if(retString) free(retString);
-		retString = NULL;
 	}
 	if(anTempStr) free(anTempStr);
 }
@@ -64,24 +63,10 @@ char* handleStringWithString(const char* idStr)
 
 int connectToMysqlServer()
 {
-	char* host = "10.10.4.92";
-	char* user = "steven";
-	char* password = "Foxconn123";
-	char* db = "messageCollection";
-	unsigned int port = 0;
-	char* unix_socket = NULL;
-	unsigned long client_flag = 0;
-	
-	conn_ptr = mysql_init(conn_ptr);
-	if(!conn_ptr)
+	mysql_init(&conn);
+	if(!mysql_real_connect(&conn,"127.0.0.1","root","Foxconn123","messageCollection",0,"/var/lib/mysql/mysql.sock",0))
 	{
-		fprintf(stderr,"init mysql failed!%s\n",mysql_error(conn_ptr));
-		return -1;
-	}
-	conn_ptr = mysql_real_connect(conn_ptr,host,user,password,db,port,unix_socket,client_flag);
-	if(!conn_ptr)
-	{
-		fprintf(stderr,"connection failed.error:%s\n",mysql_error(conn_ptr));
+		fprintf(stderr,"connect erro:%s\n",mysql_error(&conn));
 		return -1;
 	}
 	return 0;
@@ -94,13 +79,13 @@ int storeToMysql(Category category)
 	memset(sqlcmd,0,sizeof(sqlcmd));
 	sprintf(sqlcmd,"insert into category values(%s,\"%s\",%s,%s,%s,%s)",category.thumbnail,category.id,category.cat,category.type,category.createtime,category.sort);
 	//printf("%s\n",sqlcmd);
-	if(mysql_query(conn_ptr,sqlcmd))
+	if(mysql_query(&conn,sqlcmd))
 	{
-		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(conn_ptr));
-	    mysql_close(conn_ptr);
+		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(&conn));
+	    mysql_close(&conn);
 		return -1;
 	}
-	mysql_close(conn_ptr);
+	mysql_close(&conn);
 	return 0;
 }
 
@@ -111,14 +96,14 @@ int storeBlessToMysql(Bless bless)
 	memset(sqlcmd,0,sizeof(sqlcmd));
 	mysql_escape_string(escapeContent,bless.content,strlen(bless.content));
 	sprintf(sqlcmd,"insert into bless values(\"%s\",%s,\"%s\",\"%s\",%s)",bless.parentid,bless.parentname,bless.id,escapeContent,bless.icon_uri);
-	printf("%s\n",sqlcmd);
-	if(mysql_query(conn_ptr,sqlcmd))
+	//printf("%s\n",sqlcmd);
+	if(mysql_query(&conn,sqlcmd))
 	{
-		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(conn_ptr));
-	    mysql_close(conn_ptr);
+		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(&conn));
+	    mysql_close(&conn);
 		return -1;
 	}
-	mysql_close(conn_ptr);
+	mysql_close(&conn);
 	return 0;
 }
 
@@ -126,25 +111,32 @@ int storeBlessToMysql(Bless bless)
 
 int selectIdFromCategory()
 {
+	MYSQL selectconn;
 	MYSQL_RES* res;
 	MYSQL_ROW row;
-	if(connectToMysqlServer()<0) return -1;
-	memset(sqlcmd,0,sizeof(sqlcmd));
- 	sprintf(sqlcmd,"select * from category");
-	if(mysql_query(conn_ptr,sqlcmd))
+	//if(connectToMysqlServer()<0) return -1;
+	mysql_init(&selectconn);
+	if(!mysql_real_connect(&selectconn,"127.0.0.1","root","Foxconn123","messageCollection",0,"/var/lib/mysql/mysql.sock",0))
 	{
-		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(conn_ptr));
-	    mysql_close(conn_ptr);
+		fprintf(stderr,"connect erro:%s\n",mysql_error(&selectconn));
 		return -1;
 	}
-	res = mysql_use_result(conn_ptr);
+	memset(sqlcmd,0,sizeof(sqlcmd));
+ 	sprintf(sqlcmd,"select * from category");
+	if(mysql_query(&selectconn,sqlcmd))
+	{
+		fprintf(stderr,"mysql_query failed.error:%s\n",mysql_error(&selectconn));
+	    mysql_close(&selectconn);
+		return -1;
+	}
+	res = mysql_use_result(&selectconn);
 	while((row=mysql_fetch_row(res)))
 	{
+		fprintf(stderr,"%s\n",row[1]);
 		requestJsonStringWithId(row[1]);
-		break;
 	}
 	mysql_free_result(res);
-	mysql_close(conn_ptr);
+	mysql_close(&selectconn);
 	return 0;
 }
 

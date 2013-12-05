@@ -5,5 +5,5 @@
 int storeToMysql(Category category);
 int selectIdFromCategory();
 int storeBlessToMysql(Bless bless);
-
+int connectToMysqlServer();
 #endif

@@ -16,6 +16,6 @@ int main(int argc,char* argv[])
 	//storeToMysql(NULL);
 	
 	selectIdFromCategory();
-
+	//connectToMysqlServer();
 	return 0;
 }

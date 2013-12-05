@@ -52,7 +52,6 @@ char* getURLContentfromURLString(const char* theURL)
 		fprintf(stderr,"curl init error!\n");
 		return NULL;
 	}
-	fprintf(stderr,"cleaned!\n");
 	curl_easy_setopt(curl,CURLOPT_URL,theURL);
 	curl_easy_setopt(curl,CURLOPT_TIMEOUT,3);
 	curl_easy_setopt(curl,CURLOPT_WRITEDATA,(void*)&chunk);

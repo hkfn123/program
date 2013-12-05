@@ -40,6 +40,8 @@ int parseBlessFromJsonString(const char* jsonString)
 
 	for(i = 0;i < arr_len;i++)
 	{
+
+		memset(aBless,0,sizeof(aBless));
 		newJson_Object = json_object_array_get_idx(bJson_obj,i);
 
 		parent_id = json_object_object_get(newJson_Object,"catid");
@@ -64,9 +66,9 @@ int parseBlessFromJsonString(const char* jsonString)
 		json_object_put(id);
 		json_object_put(content);
 		json_object_put(icon_uri);
-		free(aBless);
-
 	}
+
+	free(aBless);
 	json_object_put(aJson_obj);
 	json_object_put(bJson_obj);
 	json_object_put(newJson_Object);
@@ -118,6 +120,7 @@ Category* parseJsonFromString(const char* jsonStr)
 
 	for(i = 0;i < arr_len;i++)
 	{
+		memset(aCategory,0,sizeof(aCategory));
 		newJson_Object = json_object_array_get_idx(bJson_obj,i);
 		thumbnail_Obj = json_object_object_get(newJson_Object,"caticon");
 		id_Obj = json_object_object_get(newJson_Object,"id");
@@ -137,7 +140,6 @@ Category* parseJsonFromString(const char* jsonStr)
 		//printf("%s\t%s\t%s\t%s\t%s\t%s\t\n",(*aCategory).thumbnail,(*aCategory).id,(*aCategory).cat,(*aCategory).type,aCategory->createtime,aCategory->sort);
 		storeToMysql(*aCategory);
 		
-		free(aCategory);
 		json_object_put(thumbnail_Obj);
 		json_object_put(id_Obj);
 		json_object_put(cat_Obj);
@@ -146,6 +148,7 @@ Category* parseJsonFromString(const char* jsonStr)
 		json_object_put(sort_obj);
 	}
 
+	free(aCategory);
 	json_object_put(aJson_obj);
 	json_object_put(newJson_Object);
 
