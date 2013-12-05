@@ -4,19 +4,11 @@
 #include <json.h>
 #include <error.h>
 #include <malloc.h>
+#include "storeToMysql.h"
 
-struct category{
-	char thumbnail[255];
-	char id[50];
-	char cat[50];
-	char type[50];
-};
-
-
-struct category* parseJsonFromString(const char* jsonStr)
+Category* parseJsonFromString(const char* jsonStr)
 {
-
-	static struct category* aCategory=NULL;
+	Category* aCategory=NULL;
 	int i = 0;
 	json_object* newJson_Object=NULL;
 	json_object* thumbnail_Obj = NULL;
@@ -80,7 +72,8 @@ struct category* parseJsonFromString(const char* jsonStr)
 		strcpy(aCategory->cat,json_object_to_json_string(cat_Obj));
 		strcpy(aCategory->type,json_object_to_json_string(type_Obj));
 		
-		printf("%s\t%s\t%s\t%s\t\n",(*aCategory).thumbnail,(*aCategory).id,(*aCategory).cat,(*aCategory).type);
+		//printf("%s\t%s\t%s\t%s\t\n",(*aCategory).thumbnail,(*aCategory).id,(*aCategory).cat,(*aCategory).type);
+		storeToMysql(*aCategory);
 
 		json_object_put(thumbnail_Obj);
 		json_object_put(id_Obj);
