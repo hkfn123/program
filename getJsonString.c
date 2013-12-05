@@ -31,13 +31,19 @@ static size_t WriteMemoryCallback(void* contents,size_t size,size_t nmemb,void* 
 
 char* getURLContentfromURLString(const char* theURL)
 {
-	CURL* curl;
+	CURL* curl = NULL;
 	CURLcode res;
 
  	struct MemoryStruct chunk;
 	chunk.memory = malloc(1);
 	chunk.size = 0;	
 	
+	if(chunk.memory == NULL)
+	{
+		fprintf(stderr,"not enough memory.\n");
+		return NULL;
+	}
+
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	curl = curl_easy_init();
@@ -46,6 +52,7 @@ char* getURLContentfromURLString(const char* theURL)
 		fprintf(stderr,"curl init error!\n");
 		return NULL;
 	}
+	fprintf(stderr,"cleaned!\n");
 	curl_easy_setopt(curl,CURLOPT_URL,theURL);
 	curl_easy_setopt(curl,CURLOPT_TIMEOUT,3);
 	curl_easy_setopt(curl,CURLOPT_WRITEDATA,(void*)&chunk);
